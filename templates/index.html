@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <!-- Left Column: Calendar -->
+    <div class="card">
+        <div class="calendar-header">
+            <button class="btn btn-icon" id="prevMonth" title="Previous Month">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <h2 class="card-title" id="currentMonthLabel" style="margin-bottom:0;">Month Year</h2>
+            <button class="btn btn-icon" id="nextMonth" title="Next Month">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+        </div>
+        
+        <div class="calendar-grid" id="calendarGrid">
+            <div class="calendar-day-header">Sun</div>
+            <div class="calendar-day-header">Mon</div>
+            <div class="calendar-day-header">Tue</div>
+            <div class="calendar-day-header">Wed</div>
+            <div class="calendar-day-header">Thu</div>
+            <div class="calendar-day-header">Fri</div>
+            <div class="calendar-day-header">Sat</div>
+            <!-- Calendar days will be rendered here by JS -->
+        </div>
+    </div>
+
+    <!-- Right Column: Today's Tasks & Stats -->
+    <div>
+        <div class="card">
+            <h2 class="card-title" id="todayTitle">오늘의 할 일 (Today's Tasks)</h2>
+            <div id="todayTasksList">
+                <p style="color: var(--text-secondary); text-align: center; padding: 1rem;">로딩 중...</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">태스크 통계 (Task Statistics)</h2>
+            <div id="statsList">
+                <p style="color: var(--text-secondary); text-align: center; padding: 1rem;">로딩 중...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

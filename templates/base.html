@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Routine Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="apple-touch-icon" href="/static/icon.svg">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">RoutineTracker</a>
+            <div class="nav-links">
+                <a href="/" class="nav-link">대시보드 (Dashboard)</a>
+                <a href="/manage" class="nav-link">태스크 관리 (Manage)</a>
+                <a href="/history" class="nav-link">리포트 히스토리 (History)</a>
+                {% if session.get('username') %}
+                    {% if session.get('is_admin') %}
+                    <a href="/admin" class="nav-link admin-nav">회원 관리 (Admin)</a>
+                    {% endif %}
+                    <span class="user-info" style="color: var(--text-secondary); font-weight: 500; font-size: 0.875rem; margin-left: 1rem; display: inline-flex; align-items: center;">
+                        <strong>{{ session.get('username') }}</strong>님
+                    </span>
+                    <a href="/logout" class="nav-link logout-btn">로그아웃</a>
+                {% else %}
+                    <a href="/login" class="nav-link login-btn" style="color: var(--primary-color); font-weight: 600;">로그인</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    <main class="container">
+        {% if request.path != '/login' %}
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }).catch(err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

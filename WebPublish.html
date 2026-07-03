@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Routine Tracker - Render 클라우드 배포 가이드</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #161b2b;
+            --card-border: #242b3d;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --primary-color: #6366f1; /* Indigo */
+            --primary-hover: #4f46e5;
+            --accent-color: #10b981; /* Emerald */
+            --warning-color: #f59e0b; /* Amber */
+            --danger-color: #ef4444; /* Rose */
+            --font-outfit: 'Outfit', 'Inter', sans-serif;
+            --font-inter: 'Inter', sans-serif;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-inter);
+            line-height: 1.6;
+            padding: 2rem 1rem 4rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3.5rem;
+            position: relative;
+        }
+
+        .logo-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+            color: white;
+            padding: 0.5rem 1.25rem;
+            border-radius: 9999px;
+            font-family: var(--font-outfit);
+            font-weight: 600;
+            font-size: 0.875rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-family: var(--font-outfit);
+            font-weight: 800;
+            font-size: 2.75rem;
+            background: linear-gradient(to right, #ffffff, #c7d2fe, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* 아키텍처 다이어그램 */
+        .architecture-flow {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 1rem;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .flow-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 140px;
+        }
+
+        .flow-node .icon-wrapper {
+            width: 54px;
+            height: 54px;
+            border-radius: 12px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.75rem;
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 1.25rem;
+            transition: var(--transition);
+        }
+
+        .flow-node:hover .icon-wrapper {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+            transform: translateY(-3px);
+        }
+
+        .flow-node span {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .flow-node small {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .flow-arrow {
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            font-weight: 300;
+        }
+
+        /* 스텝 섹션 */
+        .step-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .step-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 2.25rem;
+            position: relative;
+            transition: var(--transition);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .step-card:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .step-badge {
+            position: absolute;
+            top: -15px;
+            left: 2rem;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.25rem 1rem;
+            border-radius: 9999px;
+            font-family: var(--font-outfit);
+            font-weight: 700;
+            font-size: 0.875rem;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+        }
+
+        .step-title {
+            font-family: var(--font-outfit);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .step-title .icon-emoji {
+            font-size: 1.75rem;
+        }
+
+        .step-card p {
+            color: var(--text-secondary);
+            margin-bottom: 1.25rem;
+            font-size: 0.975rem;
+        }
+
+        /* 코드 블럭 */
+        .code-block {
+            background: #090d16;
+            border: 1px solid #1f293d;
+            border-radius: 8px;
+            padding: 1.25rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            color: #a78bfa; /* light purple */
+            margin-bottom: 1.25rem;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-block::before {
+            content: 'Terminal / File';
+            position: absolute;
+            top: 0.25rem;
+            right: 0.75rem;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .code-block code {
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* 테이블 및 팁 박스 */
+        .settings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.25rem;
+        }
+
+        .settings-table th, .settings-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--card-border);
+            font-size: 0.9rem;
+        }
+
+        .settings-table th {
+            font-weight: 600;
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .settings-table td {
+            color: var(--text-secondary);
+        }
+
+        .settings-table td strong {
+            color: var(--text-primary);
+        }
+
+        .badge-value {
+            background: #2e3748;
+            color: #e2e8f0;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+
+        .alert-box {
+            background: rgba(245, 158, 11, 0.08);
+            border-left: 4px solid var(--warning-color);
+            padding: 1.25rem;
+            border-radius: 0 12px 12px 0;
+            margin: 1.5rem 0;
+        }
+
+        .alert-box h4 {
+            color: var(--warning-color);
+            font-family: var(--font-outfit);
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .alert-box p {
+            color: var(--text-secondary);
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
+
+        .success-box {
+            background: rgba(16, 185, 129, 0.08);
+            border-left: 4px solid var(--accent-color);
+            padding: 1.25rem;
+            border-radius: 0 12px 12px 0;
+            margin: 1.5rem 0;
+        }
+
+        .success-box h4 {
+            color: var(--accent-color);
+            font-family: var(--font-outfit);
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .success-box p {
+            color: var(--text-secondary);
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
+
+        /* 탭 구조 */
+        .tabs {
+            margin-top: 1.5rem;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 2px solid var(--card-border);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            font-family: var(--font-outfit);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: var(--transition);
+        }
+
+        .tab-btn.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 5rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--card-border);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-badge">Render Deployment Guide</div>
+            <h1>Routine Tracker 클라우드 배포 가이드</h1>
+            <p class="subtitle">GitHub 저장소 연동과 Render.com 서비스를 이용해 Flask 웹앱을 온라인에 완전 무상/유상 배포하는 방법 안내</p>
+        </header>
+
+        <!-- 아키텍처 다이어그램 -->
+        <div class="architecture-flow">
+            <div class="flow-node">
+                <div class="icon-wrapper">💻</div>
+                <span>로컬 개발 환경</span>
+                <small>e:\01_git\R05-OneThing</small>
+            </div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-node">
+                <div class="icon-wrapper">🐙</div>
+                <span>GitHub 저장소</span>
+                <small>Remote Repository</small>
+            </div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-node">
+                <div class="icon-wrapper">☁️</div>
+                <span>Render.com</span>
+                <small>Flask Web Service</small>
+            </div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-node">
+                <div class="icon-wrapper">🗄️</div>
+                <span>지속성 디스크 / DB</span>
+                <small>SQLite (.db) 보존</small>
+            </div>
+        </div>
+
+        <div class="step-container">
+            <!-- Step 1 -->
+            <div class="step-card">
+                <div class="step-badge">STEP 1</div>
+                <h3 class="step-title"><span class="icon-emoji">📦</span> 배포를 위한 로컬 파일 준비</h3>
+                <p>배포 시 원활한 의존성 설치 및 구동을 위해 로컬 작업 디렉토리에 필수 설정 파일들을 확인/수정해야 합니다. 이미 패치가 진행되었습니다.</p>
+                
+                <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--text-primary);">1. requirements.txt 검사</h4>
+                <p>로컬에 Render 배포용 패키지 명세서인 <code>requirements.txt</code>가 자동으로 작성되었습니다. <code>gunicorn</code>은 프로덕션급 웹 서버 구동을 위해 필수로 탑재되어 있습니다.</p>
+                <div class="code-block">
+                    <code>Flask>=2.2.0
+Werkzeug>=2.2.0
+gunicorn>=20.1.0</code>
+                </div>
+
+                <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--text-primary);">2. app_v1.py 동적 호스트/포트 바인딩 확인</h4>
+                <p>서버 실행 포트를 고정하지 않고 클라우드가 제공하는 동적 환경변수(PORT) 및 외부 접근 허용 IP(0.0.0.0)에 유동적으로 바인딩되도록 <code>app_v1.py</code> 하단부가 정상 패치되었습니다.</p>
+                <div class="code-block">
+                    <code>if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5100))
+    app.run(debug=True, host='0.0.0.0', port=port)</code>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step-card">
+                <div class="step-badge">STEP 2</div>
+                <h3 class="step-title"><span class="icon-emoji">🐙</span> GitHub에 소스코드 푸시</h3>
+                <p>Render.com은 GitHub 저장소를 원격으로 감지하여 커밋 푸시 시 자동으로 빌드하고 배포합니다. 로컬 소스 코드를 GitHub에 업로드하세요.</p>
+                
+                <div class="code-block">
+                    <code># 1. git 저장소 초기화 및 원격 연결 (아직 초기화되지 않은 경우)
+git init
+git remote add origin https://github.com/사용자아이디/레포지토리이름.git
+
+# 2. 변경사항 추가 및 커밋
+git add .
+git commit -m "feat: login system & user isolated DB & render deploy configurations"
+
+# 3. 브랜치 확인 및 원격 저장소로 업로드
+git branch -M main
+git push -u origin main</code>
+                </div>
+                <div class="alert-box">
+                    <h4>⚠️ 보안 및 용량 팁 (중요)</h4>
+                    <p>로컬의 임시 데이터베이스 파일(<code>routine_main.db</code>, <code>users/routine_*.db</code>) 및 기존 백업(<code>*.db.backup</code>)은 원격 레포지토리에 푸시되지 않도록 <code>.gitignore</code>에 명시해주는 것이 보안상 유리하며, 데이터는 배포 환경에서 동적 생성됩니다.</p>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step-card">
+                <div class="step-badge">STEP 3</div>
+                <h3 class="step-title"><span class="icon-emoji">🚀</span> Render.com 웹 서비스 생성 및 연동</h3>
+                <p>배포 대시보드에서 새로운 웹 서비스(Web Service)를 생성하고 GitHub 저장소를 가져와 아래의 중요 파라미터를 입력합니다.</p>
+                
+                <table class="settings-table">
+                    <thead>
+                        <tr>
+                            <th>설정 항목 (Field)</th>
+                            <th>지정 값 (Value)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Service Type</strong></td>
+                            <td><span class="badge-value">Web Service</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Language</strong></td>
+                            <td><span class="badge-value">Python</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Build Command</strong></td>
+                            <td><span class="badge-value">pip install -r requirements.txt</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Start Command</strong></td>
+                            <td><span class="badge-value">gunicorn app_v1:app</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <p>설정 방법 상세:</p>
+                <ol style="margin-left: 1.5rem; color: var(--text-secondary); font-size: 0.95rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <li>Render.com 대시보드 로그인 후 우측 상단의 <strong>New +</strong> 버튼 클릭 후 <strong>Web Service</strong>를 선택합니다.</li>
+                    <li>연동된 GitHub에서 방금 커밋을 보낸 <code>레포지토리</code>를 골라 <strong>Connect</strong>를 누릅니다.</li>
+                    <li>서비스 이름(예: <code>my-routine-tracker</code>)을 정의하고, 파이썬 인스턴스 환경을 무료 티어인 <strong>Free</strong> 플랜으로 선택합니다.</li>
+                    <li>위 표의 Build Command 및 Start Command를 명확히 기재해줍니다.</li>
+                </ol>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="step-card">
+                <div class="step-badge">STEP 4</div>
+                <h3 class="step-title"><span class="icon-emoji">💾</span> SQLite 데이터 지속성 관리 정책 (필독)</h3>
+                <p>Flask 웹앱이 SQLite 기반의 로컬 DB 파일(<code>routine_main.db</code>, <code>users/routine_*.db</code>)을 쓰고 있으므로, Render의 특징에 맞춰 데이터를 유지할 전략을 선택해야 합니다.</p>
+                
+                <div class="tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" onclick="switchTab(event, 'tab-premium')">추천 플랜 (지속 디스크 연결)</button>
+                        <button class="tab-btn" onclick="switchTab(event, 'tab-free')">무료 플랜 유지용 팁 (휘발성)</button>
+                    </div>
+                    
+                    <!-- Tab 1 -->
+                    <div id="tab-premium" class="tab-content active">
+                        <p>Render의 <strong>Persistent Disk</strong> 기능을 마운트하여 배포/재시작과 무관하게 데이터베이스를 영구 보존하는 표준적인 방법입니다. (월 $7 인스턴스 구동 필요)</p>
+                        <ol style="margin-left: 1.5rem; color: var(--text-secondary); font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                            <li>배포 설정 완료 후 서비스 관리 콘솔 좌측 메뉴에서 <strong>Disks</strong> 탭으로 이동합니다.</li>
+                            <li><strong>Add Disk</strong> 버튼을 누르고 아래 명세를 기입하여 생성합니다:
+                                <ul style="margin-left: 1.25rem; margin-top: 0.25rem;">
+                                    <li><strong>Name</strong>: <code>routine-data-disk</code></li>
+                                    <li><strong>Mount Path</strong>: <code>/opt/render/project/src/data</code> (이 마운트된 디렉토리에 DB 보관)</li>
+                                    <li><strong>Size</strong>: <code>1 GB</code> (루틴용으로는 충분함)</li>
+                                </ul>
+                            </li>
+                            <li><strong>환경변수 / 코드 튜닝 팁:</strong> 디스크 마운트 경로를 데이터베이스 저장 경로로 활성화하기 위해, <code>app_v1.py</code>의 DB 경로 변수를 다음과 같이 마운트 디렉토리를 바라보도록 수정합니다:
+                                <div class="code-block" style="margin-top: 0.5rem;">
+<code># 기존 경로
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Render Persistent Disk 마운트 감지 및 마운트 경로 적용
+if os.path.exists('/opt/render/project/src/data'):
+    DB_DIR = '/opt/render/project/src/data'
+else:
+    DB_DIR = BASE_DIR
+
+USERS_DIR = os.path.join(DB_DIR, 'users')
+MAIN_DB = os.path.join(DB_DIR, 'routine_main.db')</code>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                    
+                    <!-- Tab 2 -->
+                    <div id="tab-free" class="tab-content">
+                        <p>무료 인스턴스(Free Tier)를 그대로 유지하는 경우로, 15분 미사용 시 서버가 잠자기에 들어가며, 디스크 마운트를 지원하지 않아 재기동 시 데이터베이스 파일이 수시로 초기화(초기화 시 기본 admin 계정만 재생성)됩니다.</p>
+                        <div class="alert-box" style="margin: 0.5rem 0;">
+                            <h4>💡 무료 배포 환경을 위한 추천 대안</h4>
+                            <p>무료 플랜 배포 환경을 유지하면서 상용 데이터베이스 서비스를 무료로 쓰고 싶다면, <strong>Supabase</strong> 또는 <strong>Neon Tech</strong> 등의 외부 무료 PostgreSQL 클라우드 서비스를 활용하도록 코드를 <code>SQLAlchemy</code> 등으로 간단히 포팅하면 데이터를 완전히 영구 보존할 수 있습니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5 -->
+            <div class="step-card">
+                <div class="step-badge">STEP 5</div>
+                <h3 class="step-title"><span class="icon-emoji">✨</span> 서비스 확인 및 완료</h3>
+                <p>모든 빌드가 성공적으로 끝나면 대시보드 상단에 <code>https://your-app-name.onrender.com</code> 형식의 공개 웹 도메인 주소가 생성됩니다.</p>
+                <div class="success-box">
+                    <h4>🎉 축하합니다! 배포가 최종 완료되었습니다.</h4>
+                    <p>도메인 주소를 클릭하여 접속한 뒤 정상적으로 로그인 시스템 및 태스크 관리가 작동하는지 인터넷망을 통해 확인해 보십시오.</p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Routine Tracker Deployment Assistant &copy; 2026. Made with ❤️</p>
+        </footer>
+    </div>
+
+    <script>
+        function switchTab(event, tabId) {
+            // 모든 탭 컨텐츠 숨기기
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+
+            // 모든 탭 버튼 비활성화
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+
+            // 선택된 탭 활성화
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+    </script>
+</body>
+</html>

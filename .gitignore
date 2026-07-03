@@ -1,0 +1,23 @@
+# Python bytecode caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# SQLite database files (Local test databases)
+*.db
+users/routine_*.db
+
+# Backup databases
+*.db.backup
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# OS files
+.DS_Store
+Thumbs.db

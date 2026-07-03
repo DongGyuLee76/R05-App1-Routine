@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <h2 class="card-title">새 태스크 추가 (Add New Task)</h2>
+    <form id="addTaskForm">
+        <div class="form-group">
+            <label class="form-label" for="taskName">루틴명 (Routine Name)</label>
+            <input type="text" id="taskName" class="form-control" required placeholder="예: 아침 조깅">
+        </div>
+        <div class="form-group">
+            <label class="form-label" for="startDate">시작일 (Start Date)</label>
+            <input type="date" id="startDate" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">소요 시간 (Duration)</label>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <input type="number" id="taskHour" class="form-control" min="0" placeholder="0" style="width: 80px;"> <span>시간</span>
+                <input type="number" id="taskMinute" class="form-control" min="0" max="59" placeholder="0" style="width: 80px;"> <span>분</span>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">추가하기 (Add Task)</button>
+    </form>
+</div>
+
+<div class="card" style="margin-top: 2rem;">
+    <h2 class="card-title">태스크 목록 (Task List)</h2>
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>루틴명 (Name)</th>
+                    <th>시작일 (Start Date)</th>
+                    <th>소요 시간 (Duration)</th>
+                    <th>관리 (Manage)</th>
+                </tr>
+            </thead>
+            <tbody id="taskListBody">
+                <!-- Task items will be rendered here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="card" style="width: 100%; max-width: 500px; margin: 2rem;">
+        <h2 class="card-title">태스크 수정 (Edit Task)</h2>
+        <form id="editTaskForm">
+            <input type="hidden" id="editTaskId">
+            <div class="form-group">
+                <label class="form-label" for="editTaskName">루틴명 (Routine Name)</label>
+                <input type="text" id="editTaskName" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="editStartDate">시작일 (Start Date)</label>
+                <input type="date" id="editStartDate" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">소요 시간 (Duration)</label>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <input type="number" id="editTaskHour" class="form-control" min="0" placeholder="0" style="width: 80px;"> <span>시간</span>
+                    <input type="number" id="editTaskMinute" class="form-control" min="0" max="59" placeholder="0" style="width: 80px;"> <span>분</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">저장 (Save)</button>
+                <button type="button" class="btn btn-outline" style="flex: 1;" onclick="closeEditModal()">취소 (Cancel)</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
