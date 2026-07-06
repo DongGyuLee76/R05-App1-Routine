@@ -42,6 +42,23 @@
     </div>
 </div>
 
+<div class="card" style="margin-top: 2rem; max-width: 600px; margin: 2rem auto 0 auto;">
+    <h2 class="card-title">데이터 백업 및 복원 (Data Backup & Restore)</h2>
+    <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1.5rem; line-height: 1.5;">
+        현재 로그인한 회원 계정의 모든 루틴 태스크와 수행 기록을 SQLite DB 파일(`.db`)로 저장(내보내기)하거나, 백업 파일을 업로드하여 기존 데이터를 복원(가져오기)할 수 있습니다.<br>
+        <strong>⚠️ 주의:</strong> 데이터를 가져오기(Import)하면 현재 웹에 저장된 기존 루틴과 체크 기록은 <strong>모두 삭제</strong>되고 업로드된 파일의 데이터로 대체됩니다.
+    </p>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="/api/backup/export" class="btn btn-outline" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none; flex: 1; min-width: 150px;">
+            📥 데이터 내보내기 (Export)
+        </a>
+        <button type="button" class="btn btn-primary" onclick="triggerImport()" style="flex: 1; min-width: 150px;">
+            📤 데이터 가져오기 (Import)
+        </button>
+        <input type="file" id="importFile" accept=".db" style="display: none;" onchange="handleImport(event)">
+    </div>
+</div>
+
 <div id="editModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
     <div class="card" style="width: 100%; max-width: 500px; margin: 2rem;">
         <h2 class="card-title">태스크 수정 (Edit Task)</h2>
@@ -70,3 +87,56 @@
     </div>
 </div>
 {% endblock %}
+
+{% block scripts %}
+<script>
+function triggerImport() {
+    document.getElementById('importFile').click();
+}
+
+async function handleImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!confirm('정말로 가져오기를 진행하시겠습니까?\n현재 계정의 모든 루틴과 수행 기록이 초기화되고 이 파일의 데이터로 대체됩니다.')) {
+        event.target.value = '';
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const btn = event.target.previousElementSibling;
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '업로드 중...';
+
+    try {
+        const res = await fetch('/api/backup/import', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+            alert('데이터 가져오기가 성공적으로 완료되었습니다.');
+            if (typeof loadManageTasks === 'function') {
+                loadManageTasks();
+            } else {
+                window.location.reload();
+            }
+        } else {
+            alert('가져오기 실패: ' + (data.error || '알 수 없는 오류'));
+        }
+    } catch (err) {
+        console.error(err);
+        alert('네트워크 오류가 발생했습니다.');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+        event.target.value = '';
+    }
+}
+</script>
+{% endblock %}
+
