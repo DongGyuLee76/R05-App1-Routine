@@ -1,4 +1,4 @@
-const CACHE_NAME = 'routine-tracker-v2';
+const CACHE_NAME = 'routine-tracker-v3';
 const urlsToCache = [
   '/static/css/style.css',
   '/static/js/main.js',
