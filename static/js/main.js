@@ -123,9 +123,10 @@ async function loadManageTasks() {
             <td style="cursor: grab;"><strong>≡ ${task.name}</strong></td>
             <td>${task.start_date}</td>
             <td>${task.time}</td>
-            <td style="display: flex; gap: 0.5rem;">
+            <td style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                 <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick='openEditModal(${JSON.stringify(task).replace(/'/g, "&#39;")})'>수정 (Edit)</button>
                 <button class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="deleteTask(${task.id})">삭제 (Delete)</button>
+                <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; border-color: #f59e0b; color: #d97706;" onclick="resetTask(${task.id}, '${task.name.replace(/'/g, "\\'")}')">🔄 초기화</button>
             </td>
         `;
         tbody.appendChild(tr);
@@ -148,6 +149,24 @@ async function loadManageTasks() {
         });
     }
 }
+
+window.resetTask = async function(id, name) {
+    if (!confirm(`[${name}]의 수행 기록(체크 이력)을 초기화하시겠습니까?\n루틴명은 유지되고 실행 여부 기록만 삭제됩니다.`)) return;
+
+    try {
+        const res = await fetch(`/api/tasks/${id}/reset`, { method: 'POST' });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            alert(data.message || '수행 기록이 초기화되었습니다.');
+            loadManageTasks();
+        } else {
+            alert('초기화 실패: ' + (data.error || '알 수 없는 오류'));
+        }
+    } catch (err) {
+        console.error(err);
+        alert('네트워크 오류가 발생했습니다.');
+    }
+};
 
 window.deleteTask = async function(id) {
     if (confirm('정말로 삭제하시겠습니까?')) {

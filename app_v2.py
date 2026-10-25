@@ -537,6 +537,28 @@ def handle_task(task_id):
         db.commit()
         return jsonify({'id': task_id, 'name': name, 'start_date': start_date, 'time': time}), 200
 
+@app.route('/api/tasks/<int:task_id>/reset', methods=['POST'])
+@api_login_required
+def reset_task_logs(task_id):
+    """특정 루틴의 수행 기록(task_logs)만 초기화 - 루틴명은 유지"""
+    db = get_db()
+    username = session.get('username')
+
+    # 해당 태스크가 현재 로그인한 사용자 소유인지 검증
+    cursor = db.execute('SELECT id, name FROM tasks WHERE id = ? AND username = ?', (task_id, username))
+    task = cursor.fetchone()
+    if not task:
+        return jsonify({'error': '태스크를 찾을 수 없거나 권한이 없습니다.'}), 404
+
+    try:
+        db.execute('DELETE FROM task_logs WHERE task_id = ?', (task_id,))
+        db.commit()
+        task_name = task['name'] if hasattr(task, '__getitem__') else task[1]
+        return jsonify({'success': True, 'message': f'[{task_name}]의 수행 기록이 초기화되었습니다.'}), 200
+    except Exception as e:
+        app.logger.error(f"Error resetting task logs for task_id={task_id}, user={username}: {e}")
+        return jsonify({'error': f'수행 기록 초기화 중 오류가 발생했습니다: {str(e)}'}), 500
+
 @app.route('/api/tasks/reorder', methods=['POST'])
 @api_login_required
 def reorder_tasks():
