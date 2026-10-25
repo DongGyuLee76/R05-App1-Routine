@@ -284,6 +284,18 @@ def api_history():
     result.sort(key=lambda x: x['month'], reverse=True)
     return jsonify(result)
 
+@app.route('/api/backup/reset', methods=['POST'])
+def reset_backup():
+    db = get_db()
+    try:
+        db.execute('DELETE FROM task_logs')
+        db.execute('DELETE FROM tasks')
+        db.commit()
+        return jsonify({'success': True, 'message': '모든 루틴 태스크와 수행 기록이 성공적으로 초기화되었습니다.'}), 200
+    except Exception as e:
+        app.logger.error(f"Error resetting data: {e}")
+        return jsonify({'error': f'데이터 초기화 중 오류가 발생했습니다: {str(e)}'}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, port=5100)
 #    app.run(host='172.25.160.1', port=5100, debug=True)

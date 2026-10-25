@@ -23,6 +23,8 @@
 # v2.1 (2026-07-06):
 #   - 회원 데이터 백업 및 복원 기능 추가 (데이터 내보내기/가져오기)
 #   - /api/backup/export 및 /api/backup/import 라우트 구현 (SQLite 파일 업로드/다운로드 방식)
+# v2.2 (2026-10-25):
+#   - 회원 데이터 초기화(Reset) 기능 추가 (/api/backup/reset)
 # ==============================================================================
 
 import sqlite3
@@ -925,6 +927,21 @@ def import_backup():
                 pass
         # 에러 발생 시 트랜잭션 롤백은 DBConnection 내부나 SQLAlchemy 등에서 자동으로 연계되거나 close될 때 처리
         return jsonify({'error': f'복원 처리 중 오류가 발생했습니다: {str(e)}'}), 500
+
+@app.route('/api/backup/reset', methods=['POST'])
+@login_required
+def reset_backup():
+    username = session.get('username')
+    db = get_db()
+    try:
+        # 기존 회원 데이터 삭제 (태스크 완료 로그 및 태스크 삭제)
+        db.execute('DELETE FROM task_logs WHERE task_id IN (SELECT id FROM tasks WHERE username = ?)', (username,))
+        db.execute('DELETE FROM tasks WHERE username = ?', (username,))
+        db.commit()
+        return jsonify({'success': True, 'message': '현재 계정의 모든 루틴 태스크와 수행 기록이 성공적으로 초기화되었습니다.'}), 200
+    except Exception as e:
+        app.logger.error(f"Error resetting user data for {username}: {e}")
+        return jsonify({'error': f'데이터 초기화 중 오류가 발생했습니다: {str(e)}'}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5100))

@@ -723,6 +723,20 @@ def api_history():
     result.sort(key=lambda x: x['month'], reverse=True)
     return jsonify(result)
 
+@app.route('/api/backup/reset', methods=['POST'])
+@login_required
+def reset_backup():
+    username = session.get('username')
+    db = get_db()
+    try:
+        db.execute('DELETE FROM task_logs WHERE task_id IN (SELECT id FROM tasks WHERE username = ?)', (username,))
+        db.execute('DELETE FROM tasks WHERE username = ?', (username,))
+        db.commit()
+        return jsonify({'success': True, 'message': '현재 계정의 모든 루틴 태스크와 수행 기록이 성공적으로 초기화되었습니다.'}), 200
+    except Exception as e:
+        app.logger.error(f"Error resetting user data for {username}: {e}")
+        return jsonify({'error': f'데이터 초기화 중 오류가 발생했습니다: {str(e)}'}), 500
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5100))
     app.run(debug=True, host='0.0.0.0', port=port)

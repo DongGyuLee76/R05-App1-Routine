@@ -45,15 +45,18 @@
 <div class="card" style="margin-top: 2rem; max-width: 600px; margin: 2rem auto 0 auto;">
     <h2 class="card-title">데이터 백업 및 복원 (Data Backup & Restore)</h2>
     <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1.5rem; line-height: 1.5;">
-        현재 로그인한 회원 계정의 모든 루틴 태스크와 수행 기록을 SQLite DB 파일(`.db`)로 저장(내보내기)하거나, 백업 파일을 업로드하여 기존 데이터를 복원(가져오기)할 수 있습니다.<br>
-        <strong>⚠️ 주의:</strong> 데이터를 가져오기(Import)하면 현재 웹에 저장된 기존 루틴과 체크 기록은 <strong>모두 삭제</strong>되고 업로드된 파일의 데이터로 대체됩니다.
+        현재 로그인한 회원 계정의 모든 루틴 태스크와 수행 기록을 SQLite DB 파일(`.db`)로 저장(내보내기)하거나, 백업 파일을 업로드하여 기존 데이터를 복원(가져오기), 또는 모든 데이터를 완전히 초기화(삭제)할 수 있습니다.<br>
+        <strong>⚠️ 주의:</strong> 데이터를 가져오기(Import)하거나 초기화(Reset)하면 현재 웹에 저장된 기존 루틴과 체크 기록은 <strong>모두 삭제</strong>되므로 사전에 백업해 두는 것을 권장합니다.
     </p>
     <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-        <a href="/api/backup/export" class="btn btn-outline" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none; flex: 1; min-width: 150px;">
+        <a href="/api/backup/export" class="btn btn-outline" style="display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none; flex: 1; min-width: 140px;">
             📥 데이터 내보내기 (Export)
         </a>
-        <button type="button" class="btn btn-primary" onclick="triggerImport()" style="flex: 1; min-width: 150px;">
+        <button type="button" class="btn btn-primary" onclick="triggerImport()" style="flex: 1; min-width: 140px;">
             📤 데이터 가져오기 (Import)
+        </button>
+        <button type="button" class="btn btn-danger" onclick="confirmReset(this)" style="flex: 1; min-width: 140px;">
+            🗑️ 데이터 초기화 (Reset)
         </button>
         <input type="file" id="importFile" accept=".db" style="display: none;" onchange="handleImport(event)">
     </div>
@@ -135,6 +138,58 @@ async function handleImport(event) {
         btn.disabled = false;
         btn.textContent = originalText;
         event.target.value = '';
+    }
+}
+
+async function confirmReset(buttonEl) {
+    const firstConfirm = confirm(
+        '⚠️ 경고: 정말로 모든 데이터를 초기화하시겠습니까?\n\n' +
+        '현재 로그인한 계정의 모든 루틴 태스크와 일별 체크 기록이 영구적으로 삭제됩니다.\n' +
+        '계속 진행하시려면 [확인]을 눌러주세요.'
+    );
+    if (!firstConfirm) return;
+
+    const secondConfirm = confirm(
+        '⚠️ 최종 확인: 삭제된 데이터는 복구할 수 없습니다.\n' +
+        '필요한 경우 사전에 [데이터 내보내기]로 백업을 받아두세요.\n\n' +
+        '정말 초기화를 실행하시겠습니까?'
+    );
+    if (!secondConfirm) return;
+
+    const btn = buttonEl || document.querySelector('button[onclick*="confirmReset"]');
+    const originalText = btn ? btn.textContent : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = '초기화 중...';
+    }
+
+    try {
+        const res = await fetch('/api/backup/reset', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+            alert(data.message || '데이터가 성공적으로 초기화되었습니다.');
+            if (typeof loadManageTasks === 'function') {
+                loadManageTasks();
+            } else {
+                window.location.reload();
+            }
+        } else {
+            alert('초기화 실패: ' + (data.error || '알 수 없는 오류가 발생했습니다.'));
+        }
+    } catch (err) {
+        console.error(err);
+        alert('네트워크 오류가 발생했습니다.');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
     }
 }
 </script>
