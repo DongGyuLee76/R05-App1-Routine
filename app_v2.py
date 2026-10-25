@@ -934,14 +934,13 @@ def reset_backup():
     username = session.get('username')
     db = get_db()
     try:
-        # 기존 회원 데이터 삭제 (태스크 완료 로그 및 태스크 삭제)
+        # 루틴명(tasks)은 그대로 유지하고 태스크 실행 여부/수행 기록(task_logs)만 초기화
         db.execute('DELETE FROM task_logs WHERE task_id IN (SELECT id FROM tasks WHERE username = ?)', (username,))
-        db.execute('DELETE FROM tasks WHERE username = ?', (username,))
         db.commit()
-        return jsonify({'success': True, 'message': '현재 계정의 모든 루틴 태스크와 수행 기록이 성공적으로 초기화되었습니다.'}), 200
+        return jsonify({'success': True, 'message': '루틴명은 유지되고 모든 태스크의 실행 여부(수행 기록)가 성공적으로 초기화되었습니다.'}), 200
     except Exception as e:
         app.logger.error(f"Error resetting user data for {username}: {e}")
-        return jsonify({'error': f'데이터 초기화 중 오류가 발생했습니다: {str(e)}'}), 500
+        return jsonify({'error': f'실행 기록 초기화 중 오류가 발생했습니다: {str(e)}'}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5100))
